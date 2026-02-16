@@ -75,9 +75,12 @@ export function getRuntime() {
 }
 
 // Default export for OpenClaw plugin loader
-export default {
+const plugin = {
   id,
   name,
   version,
-  activate,
+  description: 'Personal AI assistant for A Kid Called Beast collectors',
+  register: activate,
 };
+
+export default plugin;
