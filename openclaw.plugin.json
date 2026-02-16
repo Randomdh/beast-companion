@@ -16,7 +16,7 @@
       },
       "dataApiUrl": {
         "type": "string",
-        "default": "https://api.beast-companion.xyz",
+        "default": "http://129.158.41.81:3100",
         "description": "Remote data API URL (if dataSource is remote)"
       },
       "localDataPath": {
