@@ -42,6 +42,30 @@ Full control, fully private. Requires some technical comfort.
 2. Configure your AI provider (see below)
 3. Install Beast Companion plugin
 
+#### Hardware: Mac Mini vs VPS
+
+Many OpenClaw users buy dedicated Mac Minis. Here's when that makes sense:
+
+| Factor | Mac Mini | VPS ($5-24/mo) |
+|--------|----------|----------------|
+| **iMessage alerts** | Native support | Not possible |
+| **Local LLMs** | Run on unified memory ($0 API) | Need $100+/mo GPU instances |
+| **Privacy** | Data never leaves home | Data on provider's server |
+| **Power cost** | ~$1-2/mo (3-4W idle) | Included |
+| **Noise** | Silent, bedroom-friendly | N/A |
+| **Uptime** | You manage | Provider manages |
+| **Upfront cost** | $600-1500 | $0 |
+
+**For Beast Companion specifically**: Most users don't need a Mac Mini. You're calling our API + a cloud model — a $5/month VPS or Kimi Claw works fine.
+
+**Consider Mac Mini if you also want**:
+- iMessage integration for alerts
+- Local LLMs for zero ongoing API costs
+- Maximum privacy (sensitive portfolio data)
+- No monthly fees after hardware purchase
+
+Resources: [UGREEN comparison](https://us.ugreen.com/blogs/docking-stations/is-a-mac-mini-worth-buying-to-run-openclaw-24-7), [Hardware guide](https://gist.github.com/yalexx/4f594036b43120a5f3614b2cf83ccc05)
+
 ---
 
 ## Critical: Cost & Performance Setup
