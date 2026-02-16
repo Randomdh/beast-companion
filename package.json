@@ -5,6 +5,15 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "openclaw": {
+    "extensions": {
+      "beast-companion": {
+        "type": "plugin",
+        "entry": "./dist/index.js",
+        "config": "./openclaw.plugin.json"
+      }
+    }
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
