@@ -1,10 +1,10 @@
 # Beast Companion — Session State
 
 ## Current Task
-Documentation complete — ready for testing and commit
+GCP setup script ready — user signing up for Google Cloud
 
 ## Status
-COMPLETED: User-facing documentation
+PIVOTED: Oracle free tier too slow for OpenClaw compilation, moving to GCP $300 trial
 
 ## What's Done
 1. Plugin scaffold with 6 agent tools
@@ -57,10 +57,11 @@ beast-companion/
 ```
 
 ## Next Steps
-1. **Commit**: Stage and commit documentation
-2. **Test locally**: Install plugin in local OpenClaw
-3. **Token gating**: Add `/v1/verify-holder` endpoint
-4. **Package**: Prepare for distribution
+1. **GCP Setup**: User signs up for Google Cloud ($300/90 days trial)
+2. **Create VM**: e2-medium (2 vCPU, 4GB RAM) with Ubuntu 22.04
+3. **Run script**: `bash setup-gcp-openclaw.sh`
+4. **Configure**: Add OpenRouter API key to config
+5. **Test**: Verify Beast Companion tools work
 
 ## Architecture
 
@@ -79,5 +80,18 @@ Beast Companion Plugin                    VM (129.158.41.81)
 - `1a8fa9a` — Fix data loader for object-keyed JSON
 - `3059577` — User documentation (README, SECURITY.md, research docs)
 
+## Architecture Change
+
+**Old plan**: Run everything on Oracle free tier VM
+**New plan**:
+- Oracle VM (129.158.41.81): Beast Companion API only (:3100)
+- GCP VM: OpenClaw + Beast Companion plugin
+
+**Why**: Oracle E2.1.Micro (1GB RAM, 73% CPU throttling) couldn't compile node-llama-cpp in reasonable time.
+
+## Scripts
+- `scripts/setup-vm-openclaw.sh` — Oracle VM (deprecated)
+- `scripts/setup-gcp-openclaw.sh` — GCP setup (current)
+
 ## Last Updated
-2026-02-16 (Documentation complete)
+2026-02-16 (Pivoted to GCP)
