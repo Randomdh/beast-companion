@@ -3,5 +3,6 @@
   "name": "Beast Companion",
   "description": "Personal AI assistant for A Kid Called Beast collectors",
   "version": "0.1.0",
-  "entry": "./index.ts"
+  "entry": "./index.ts",
+  "slot": "tool"
 }
