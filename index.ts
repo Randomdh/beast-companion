@@ -1,16 +1,15 @@
-// Beast Companion - OpenClaw Tool Plugin
-import { Type as T } from '@sinclair/typebox';
+// Beast Companion - OpenClaw Plugin
+// Provides AKCB NFT analysis tools
 
 const API_URL = 'http://129.158.41.81:3100';
 
-// Tools definition
-const tools = [
-  {
+export async function register(api: any) {
+  console.log('[Beast Companion] Registering tools...');
+
+  // Tool 1: Evaluate a specific beast
+  api.registerTool({
     name: 'akcb_evaluate_beast',
     description: 'Get a comprehensive evaluation of a specific AKCB beast by token ID. Returns composite score, vibe score, trait breakdown, and buy/hold/pass recommendation.',
-    inputSchema: T.Object({
-      tokenId: T.Number({ description: 'The beast token ID (1-10000)' }),
-    }),
     execute: async (params: { tokenId: number }) => {
       try {
         const res = await fetch(`${API_URL}/v1/token/${params.tokenId}`);
@@ -20,17 +19,13 @@ const tools = [
         return { error: 'Failed to fetch beast data' };
       }
     },
-  },
-  {
+  });
+
+  // Tool 2: Find listings
+  api.registerTool({
     name: 'akcb_find_listings',
-    description: 'Search for AKCB listings. Can filter by trait, price range, composite score, and archetype.',
-    inputSchema: T.Object({
-      traitValue: T.Optional(T.String({ description: 'Filter by trait (e.g., "Wolf", "Robot Suit")' })),
-      maxPrice: T.Optional(T.Number({ description: 'Maximum price in ETH' })),
-      minComposite: T.Optional(T.Number({ description: 'Minimum composite score (0-100)' })),
-      limit: T.Optional(T.Number({ description: 'Max results', default: 10 })),
-    }),
-    execute: async (params: any) => {
+    description: 'Search for AKCB listings. Can filter by trait, price range, composite score.',
+    execute: async (params: { traitValue?: string; maxPrice?: number; minComposite?: number; limit?: number }) => {
       try {
         const query = new URLSearchParams();
         if (params.traitValue) query.set('trait', params.traitValue);
@@ -45,11 +40,12 @@ const tools = [
         return { error: 'Failed to fetch listings' };
       }
     },
-  },
-  {
+  });
+
+  // Tool 3: Market brief
+  api.registerTool({
     name: 'akcb_market_brief',
     description: 'Get current AKCB market overview: floor price, volume, trending traits.',
-    inputSchema: T.Object({}),
     execute: async () => {
       try {
         const res = await fetch(`${API_URL}/v1/stats`);
@@ -59,13 +55,12 @@ const tools = [
         return { error: 'Failed to fetch market data' };
       }
     },
-  },
-  {
+  });
+
+  // Tool 4: Portfolio analysis
+  api.registerTool({
     name: 'akcb_portfolio_analyze',
     description: 'Analyze an AKCB wallet portfolio. Shows beasts owned, average scores, and suggestions.',
-    inputSchema: T.Object({
-      wallet: T.String({ description: 'Ethereum wallet address (0x...)' }),
-    }),
     execute: async (params: { wallet: string }) => {
       try {
         const res = await fetch(`${API_URL}/v1/wallet/${params.wallet}`);
@@ -75,25 +70,7 @@ const tools = [
         return { error: 'Failed to analyze wallet' };
       }
     },
-  },
-];
+  });
 
-// OpenClaw expects register or activate export
-export async function register(api: any) {
-  console.log('[Beast Companion] Registering tools...');
-
-  for (const tool of tools) {
-    api.registerTool({
-      name: tool.name,
-      description: tool.description,
-      parameters: tool.inputSchema,
-      execute: tool.execute,
-    });
-  }
-
-  console.log('[Beast Companion] Registered', tools.length, 'tools');
+  console.log('[Beast Companion] Registered 4 tools');
 }
-
-export const activate = register;
-
-export default { register, activate };

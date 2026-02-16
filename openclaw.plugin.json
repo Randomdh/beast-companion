@@ -3,21 +3,14 @@
   "name": "Beast Companion",
   "description": "Personal AI assistant for A Kid Called Beast collectors",
   "version": "0.1.0",
-  "entry": "./dist/index.js",
-  "slot": "tool",
+  "entry": "./index.ts",
   "configSchema": {
     "type": "object",
     "properties": {
-      "dataSource": {
-        "type": "string",
-        "enum": ["local", "remote"],
-        "default": "remote",
-        "description": "Where to fetch scoring data"
-      },
       "dataApiUrl": {
         "type": "string",
         "default": "http://129.158.41.81:3100",
-        "description": "Remote API endpoint"
+        "description": "Beast Companion API endpoint"
       },
       "walletAddresses": {
         "type": "array",
@@ -25,6 +18,7 @@
         "default": [],
         "description": "Wallet addresses to track"
       }
-    }
+    },
+    "additionalProperties": false
   }
 }
