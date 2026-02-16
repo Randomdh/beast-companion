@@ -23,7 +23,7 @@ let runtime: OpenClawPluginApi['runtime'] | null = null;
 /**
  * Plugin registration - called by OpenClaw on startup
  */
-export async function register(api: OpenClawPluginApi): Promise<void> {
+export async function activate(api: OpenClawPluginApi): Promise<void> {
   runtime = api.runtime;
   const config = api.runtime.getConfig<BeastCompanionConfig>();
 
@@ -79,5 +79,5 @@ export default {
   id,
   name,
   version,
-  register,
+  activate,
 };
