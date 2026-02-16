@@ -165,10 +165,10 @@ async function getBestTraitScore(listing: Listing): Promise<number | undefined> 
   return bestScore > 0 ? bestScore : undefined;
 }
 
-async function sortByPortfolioRelevance(
-  listings: Listing[],
+async function sortByPortfolioRelevance<T extends Listing>(
+  listings: T[],
   userId: string
-): Promise<Listing[]> {
+): Promise<T[]> {
   // Get user's tracked wallets and their beasts
   const wallets = await getTrackedWallets(userId);
   if (wallets.length === 0) {

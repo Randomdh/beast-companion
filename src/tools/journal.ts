@@ -38,7 +38,7 @@ Search your past entries to recall your reasoning.`,
         },
         tags: {
           type: 'array',
-          items: { type: 'string' },
+          items: { type: 'string', description: 'Tag string' },
           description: 'Tags for categorization',
         },
         // List/search parameters

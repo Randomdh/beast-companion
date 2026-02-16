@@ -47,7 +47,8 @@ export interface ToolContext {
   sessionId?: string;
 }
 
-export type ToolResult = string | Record<string, unknown> | Array<unknown>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ToolResult = string | Record<string, any> | Array<unknown>;
 
 export type HttpHandler = (req: HttpRequest) => Promise<HttpResponse>;
 export type HookHandler = (event: HookEvent) => Promise<void>;
