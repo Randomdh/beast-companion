@@ -5,6 +5,7 @@
   "version": "0.1.0",
   "author": "AKCB Community",
   "homepage": "https://github.com/akcb/beast-companion",
+  "entry": "./dist/index.js",
   "configSchema": {
     "type": "object",
     "properties": {
