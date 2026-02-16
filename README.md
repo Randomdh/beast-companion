@@ -88,26 +88,30 @@ Alternatives: [MemOS](https://github.com/memos-ai/openclaw-plugin) (72% reductio
 
 ### 2. Configure Your Model (Required)
 
-Your AI provider choice dramatically affects cost. **We recommend Kimi K2.5** — it's 8x cheaper than Claude and handles 90% of tasks equally well.
+Your AI provider choice dramatically affects cost. **We recommend OpenRouter** — pay-as-you-go access to multiple models including Kimi K2.5 (8x cheaper than Claude).
 
-| Model | Cost per 1M tokens | Quality | Recommendation |
-|-------|-------------------|---------|----------------|
-| Kimi K2.5 | ~$0.60 | Excellent | **Default choice** |
-| Claude Haiku | ~$0.25 | Good | Simple queries |
-| Claude Sonnet | ~$3.00 | Great | Complex analysis |
-| Claude Opus | ~$15.00 | Best | Deep reasoning only |
-| Local (LMStudio) | $0 | Varies | Privacy-focused |
+1. Sign up at [openrouter.ai](https://openrouter.ai)
+2. Add credits (no subscription required)
+3. Get your API key from the dashboard
+
+| Model | Input Cost | Output Cost | Recommendation |
+|-------|------------|-------------|----------------|
+| Kimi K2.5 | $0.50/M | $2.80/M | **Default choice** |
+| Kimi K2 (free) | $0 | $0 | Testing only |
+| Claude Haiku | $0.25/M | $1.25/M | Simple queries |
+| Claude Sonnet | $3/M | $15/M | Complex analysis |
+| Local (LMStudio) | $0 | $0 | Privacy-focused |
 
 Configure in `~/.openclaw/openclaw.json`:
 ```json
 {
   "providers": {
-    "kimi": {
-      "apiKey": "YOUR_KIMI_API_KEY"
+    "openrouter": {
+      "apiKey": "sk-or-v1-YOUR_KEY_HERE"
     }
   },
   "defaults": {
-    "model": "kimi-k2.5"
+    "model": "moonshotai/kimi-k2.5"
   }
 }
 ```
@@ -274,9 +278,10 @@ Run `openclaw doctor --fix` after any upgrade or config change. OpenClaw stores 
 
 ### Costs higher than expected
 1. Verify memory plugin is active
-2. Switch to Kimi K2.5 (8x cheaper than Claude)
-3. Enable prompt caching in your provider settings
-4. Use `/new` to clear context when starting fresh tasks
+2. Use Kimi K2.5 via OpenRouter (8x cheaper than Claude)
+3. Try free Kimi K2 tier for testing (`moonshotai/kimi-k2:free`)
+4. Enable prompt caching in your provider settings
+5. Use `/new` to clear context when starting fresh tasks
 
 ---
 

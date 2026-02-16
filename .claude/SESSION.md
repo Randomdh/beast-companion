@@ -77,7 +77,7 @@ Beast Companion Plugin                    VM (129.158.41.81)
 - `a297482` — Beast Companion plugin scaffold
 - `d77afcd` — Beast Companion API initial
 - `1a8fa9a` — Fix data loader for object-keyed JSON
-- (pending) — User documentation
+- `3059577` — User documentation (README, SECURITY.md, research docs)
 
 ## Last Updated
 2026-02-16 (Documentation complete)

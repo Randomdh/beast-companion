@@ -94,12 +94,12 @@ else
     cat > "$CONFIG_FILE" << 'CONFIGEOF'
 {
   "providers": {
-    "kimi": {
-      "apiKey": "YOUR_KIMI_API_KEY_HERE"
+    "openrouter": {
+      "apiKey": "YOUR_OPENROUTER_API_KEY_HERE"
     }
   },
   "defaults": {
-    "model": "kimi-k2.5"
+    "model": "moonshotai/kimi-k2.5"
   },
   "plugins": {
     "beast-companion": {
@@ -114,7 +114,7 @@ CONFIGEOF
     echo "Created $CONFIG_FILE"
     echo ""
     echo "IMPORTANT: Edit this file to add:"
-    echo "  1. Your Kimi API key (get from kimi.ai)"
+    echo "  1. Your OpenRouter API key (get from openrouter.ai)"
     echo "  2. Your wallet addresses"
 fi
 echo ""
@@ -139,7 +139,8 @@ echo ""
 echo "=== Setup Complete ==="
 echo ""
 echo "Next steps:"
-echo "  1. Get a Kimi API key from https://kimi.ai"
+echo "  1. Get an OpenRouter API key from https://openrouter.ai"
+echo "     (Pay-as-you-go, no subscription required)"
 echo "  2. Edit ~/.openclaw/openclaw.json with your API key and wallet"
 echo "  3. Run: openclaw onboard"
 echo "  4. Start OpenClaw: openclaw start"
