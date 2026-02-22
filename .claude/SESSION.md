@@ -1,97 +1,63 @@
 # Beast Companion — Session State
 
 ## Current Task
-GCP setup script ready — user signing up for Google Cloud
+OpenClaw plugin — WORKING
 
 ## Status
-PIVOTED: Oracle free tier too slow for OpenClaw compilation, moving to GCP $300 trial
+Plugin deployed and functional on GCP VM. 5 tools registered, beast evaluation confirmed working.
 
-## What's Done
-1. Plugin scaffold with 6 agent tools
-2. Data API deployed on VM (port 3100)
-3. OpenClaw ecosystem research
-4. Research documentation
-5. **User-facing README** (comprehensive)
-6. **Security guide** (docs/SECURITY.md)
+## What Was Done (2026-02-22)
 
-## Documentation Summary
+### Plugin Fix
+Researched OpenClaw plugin docs properly. Found three bugs in the old plugin:
+1. **Wrong execute signature** — was `execute(params)`, needs `execute(_id, params)`
+2. **Wrong return format** — returned raw JSON, needs `{ content: [{ type: "text", text: "..." }] }`
+3. **Missing parameters schema** — tools had no `parameters` field, OpenClaw couldn't see inputs
+4. **Wrong API endpoints** — plugin used `/v1/token/:id`, actual API uses `/v1/tokens/:id/score`
 
-### README.md
-- Two setup paths: Kimi Claw (zero setup) vs self-hosted
-- Critical setup section with non-negotiables
-- Cost estimates by usage tier
-- Step-by-step installation
-- Rich usage examples
-- Tools reference
-- Configuration options
-- Troubleshooting guide
+Also switched from object export to function export (`export default function register(api)`) to match working examples.
 
-### docs/SECURITY.md
-- Threat landscape context
-- Beast Companion's security posture
-- Pre-flight checklist
-- Hardening recommendations
-- Incident response
+### GCP VM SSH Access
+- Generated SSH key pair (`~/.ssh/gcp-openclaw`)
+- Added public key to GCP Compute Engine metadata
+- Can now SSH and SCP directly: `ssh -i ~/.ssh/gcp-openclaw rhodgson93@34.21.74.194`
 
-### docs/OPENCLAW_RESEARCH.md
-- Full research findings (internal reference)
-- Sources index
-- Decision log
+### Tools Registered (5)
+| Tool | Endpoint | Description |
+|------|----------|-------------|
+| `akcb_evaluate_beast` | `/v1/tokens/:id/score` + `/traits` + `/grail-scores` | Full beast evaluation (combined) |
+| `akcb_search_tokens` | `/v1/search/tokens` | Search tokens by min score |
+| `akcb_market_brief` | `/v1/stats` | Data overview stats |
+| `akcb_trending_traits` | `/v1/traits/heating` | Hot traits with rising demand |
+| `akcb_search_traits` | `/v1/search/traits` | Search traits by name |
 
-## File Structure
-```
-beast-companion/
-├── README.md                    # User guide
-├── docs/
-│   ├── SECURITY.md              # Security hardening
-│   └── OPENCLAW_RESEARCH.md     # Research findings
-├── src/
-│   ├── index.ts
-│   ├── tools/
-│   ├── data/
-│   └── state/
-├── openclaw.plugin.json         # Updated with VM API URL
-├── .claude/
-│   └── SESSION.md
-└── package.json
-```
-
-## Next Steps
-1. **GCP Setup**: User signs up for Google Cloud ($300/90 days trial)
-2. **Create VM**: e2-medium (2 vCPU, 4GB RAM) with Ubuntu 22.04
-3. **Run script**: `bash setup-gcp-openclaw.sh`
-4. **Configure**: Add OpenRouter API key to config
-5. **Test**: Verify Beast Companion tools work
+## What's on GCP VM
+- `/home/rhodgson93/.openclaw/extensions/beast-companion/index.ts` — plugin (5 tools)
+- `/home/rhodgson93/.openclaw/extensions/beast-companion/openclaw.plugin.json` — manifest
+- `/home/rhodgson93/.openclaw/openclaw.json` — config (beast-companion enabled, config: {})
+- Gateway running in screen session: `screen -r openclaw`
+- Gateway log: `/tmp/openclaw-gateway.log`
 
 ## Architecture
-
 ```
-Beast Companion Plugin                    VM (129.158.41.81)
-┌─────────────────────┐                  ┌──────────────────┐
-│  User's OpenClaw    │ ── REST ────────►│ :3100 API        │
-│  instance           │                  │ (beast-companion │
-└─────────────────────┘                  │  -api)           │
-                                         └──────────────────┘
+GCP VM (OpenClaw)                    Oracle VM
+┌─────────────────┐                  ┌──────────────────┐
+│ Beast Companion │ ── REST ────────►│ :3100 API        │
+│ Plugin (5 tools)│                  │ (beast-companion │
+└─────────────────┘                  │  -api)           │
+                                     └──────────────────┘
 ```
 
-## Commits
-- `a297482` — Beast Companion plugin scaffold
-- `d77afcd` — Beast Companion API initial
-- `1a8fa9a` — Fix data loader for object-keyed JSON
-- `3059577` — User documentation (README, SECURITY.md, research docs)
+## GCP VM Access
+- Host: 34.21.74.194
+- User: rhodgson93
+- SSH key: ~/.ssh/gcp-openclaw
+- `ssh -i ~/.ssh/gcp-openclaw rhodgson93@34.21.74.194`
 
-## Architecture Change
-
-**Old plan**: Run everything on Oracle free tier VM
-**New plan**:
-- Oracle VM (129.158.41.81): Beast Companion API only (:3100)
-- GCP VM: OpenClaw + Beast Companion plugin
-
-**Why**: Oracle E2.1.Micro (1GB RAM, 73% CPU throttling) couldn't compile node-llama-cpp in reasonable time.
-
-## Scripts
-- `scripts/setup-vm-openclaw.sh` — Oracle VM (deprecated)
-- `scripts/setup-gcp-openclaw.sh` — GCP setup (current)
+## Next Step
+- Add more API endpoints (listings, wallet portfolio) to beast-companion-api
+- Add corresponding tools to the plugin
+- Consider adding wallet tracking via configSchema
 
 ## Last Updated
-2026-02-16 (Pivoted to GCP)
+2026-02-22

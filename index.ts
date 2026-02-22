@@ -127,5 +127,30 @@ export default function register(api: any) {
     },
   });
 
-  console.log('[Beast Companion] Registered 5 tools');
+  // Tool 6: Wallet portfolio analysis
+  api.registerTool({
+    name: 'akcb_portfolio_analyze',
+    description: 'Analyze an Ethereum wallet\'s AKCB collection. Returns token count, average scores, archetype distribution, top beast, and per-token breakdown with traits and grail scores.',
+    parameters: {
+      type: 'object',
+      properties: {
+        address: { type: 'string', description: 'Ethereum wallet address (0x...)' },
+      },
+      required: ['address'],
+    },
+    async execute(_id: string, params: { address: string }) {
+      try {
+        const res = await fetch(`${API_URL}/v1/wallet/${params.address}/portfolio`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+          return textResult(err);
+        }
+        return textResult(await res.json());
+      } catch (e) {
+        return textResult({ error: 'Failed to fetch portfolio data' });
+      }
+    },
+  });
+
+  console.log('[Beast Companion] Registered 6 tools');
 }
