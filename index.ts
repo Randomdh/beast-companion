@@ -9,13 +9,21 @@ function textResult(data: unknown) {
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
 }
 
-// Strip numeric score fields — the model should only see tier labels
+// Strip numeric score fields AND rename grail-related keys
+// The model will parrot any number or "grail" reference it sees
 const SCORE_FIELDS = new Set([
   'grailScore', 'compositeScore', 'traitStackScore', 'vibeScore',
   'reputationScore', 'premium', 'velocity', 'conviction', 'momentum',
   'cult', 'scarcity', 'avgPrice', 'recentSales', 'currentScore',
   'previousScore', 'change', 'averageComposite', 'averageVibe',
+  'score',
 ]);
+
+// Rename keys so the model never sees "grail" in field names
+const RENAME_KEYS: Record<string, string> = {
+  'grailScores': 'traitTiers',
+  'topGrailTrait': 'bestTrait',
+};
 
 function stripScores(obj: any): any {
   if (Array.isArray(obj)) return obj.map(stripScores);
@@ -23,7 +31,8 @@ function stripScores(obj: any): any {
   const out: any = {};
   for (const [k, v] of Object.entries(obj)) {
     if (SCORE_FIELDS.has(k)) continue;
-    out[k] = stripScores(v);
+    const key = RENAME_KEYS[k] ?? k;
+    out[key] = stripScores(v);
   }
   return out;
 }
@@ -34,7 +43,7 @@ export default function register(api: any) {
   // Tool 1: Evaluate a specific beast
   api.registerTool({
     name: 'akcb_evaluate_beast',
-    description: 'Get a comprehensive evaluation of a specific AKCB beast by token ID. Returns build tier (top-tier build, strong build, solid build, decent build, floor build), archetype, and trait breakdown with tier classifications (grail-tier, premium, solid, common, floor). Always describe beasts using tier names, never numeric scores.',
+    description: 'Get a comprehensive evaluation of a specific AKCB beast by token ID. Returns build tier (top-tier build, strong build, solid build, decent build, floor build), archetype, and trait breakdown with tier classifications (elite, premium, solid, common, floor). Always describe beasts using tier names, never numeric scores.',
     parameters: {
       type: 'object',
       properties: {
@@ -52,8 +61,8 @@ export default function register(api: any) {
         if (!scoreRes.ok) return textResult({ error: `Beast #${params.tokenId} not found` });
         const score = await scoreRes.json();
         const traits = traitsRes.ok ? await traitsRes.json() : [];
-        const grailScores = grailRes.ok ? await grailRes.json() : [];
-        return textResult(stripScores({ ...score, traits, grailScores }));
+        const traitTiers = grailRes.ok ? await grailRes.json() : [];
+        return textResult(stripScores({ ...score, traits, traitTiers }));
       } catch (e) {
         return textResult({ error: 'Failed to fetch beast data' });
       }
@@ -131,7 +140,7 @@ export default function register(api: any) {
   // Tool 5: Search traits by name
   api.registerTool({
     name: 'akcb_search_traits',
-    description: 'Search AKCB traits by name. Returns tier (grail-tier, premium, solid, common, floor), supply count, and scarcity info. Use tier names and supply/scarcity framing — never numeric scores.',
+    description: 'Search AKCB traits by name. Returns tier (elite, premium, solid, common, floor), supply count, and scarcity info. Use tier names and supply/scarcity framing — never numeric scores.',
     parameters: {
       type: 'object',
       properties: {
