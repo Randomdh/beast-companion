@@ -43,7 +43,7 @@ export default function register(api: any) {
   // Tool 1: Evaluate a specific beast
   api.registerTool({
     name: 'akcb_evaluate_beast',
-    description: 'Get a comprehensive evaluation of a specific AKCB beast by token ID. Returns build tier (top-tier build, strong build, solid build, decent build, floor build), archetype, and trait breakdown with tier classifications (elite, premium, solid, common, floor). Always describe beasts using tier names, never numeric scores.',
+    description: 'Get a comprehensive evaluation of a specific AKCB beast by token ID. Returns build tier (top-tier build, strong build, solid build, decent build, floor build), archetype, trait breakdown with tier classifications (elite, premium, solid, common, floor), and an openseaUrl link. Always describe beasts using tier names, never numeric scores. When linking to a beast, use the openseaUrl from the response — never construct URLs yourself.',
     parameters: {
       type: 'object',
       properties: {
@@ -206,7 +206,7 @@ export default function register(api: any) {
   // Tool 8: Recent sales
   api.registerTool({
     name: 'akcb_recent_sales',
-    description: 'Get recent AKCB sales with prices in ETH and USD. Shows what beasts sold recently and at what price.',
+    description: 'Get recent AKCB sales with prices in ETH and USD, plus openseaUrl links. Shows what beasts sold recently and at what price. When linking to beasts, use the openseaUrl from each result — never construct URLs yourself.',
     parameters: {
       type: 'object',
       properties: {
@@ -228,7 +228,7 @@ export default function register(api: any) {
   // Tool 9: Active listings
   api.registerTool({
     name: 'akcb_listings',
-    description: 'Get active AKCB listings on OpenSea, enriched with build tier, archetype, and top trait tier. Filter by max price. Use tier names when describing listings.',
+    description: 'Get active AKCB listings on OpenSea, enriched with build tier, archetype, top trait tier, and openseaUrl link. Filter by max price. Use tier names when describing listings. When linking to listings, use the openseaUrl from each result — never construct URLs yourself.',
     parameters: {
       type: 'object',
       properties: {
