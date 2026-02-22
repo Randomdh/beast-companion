@@ -1,11 +1,31 @@
 // Beast Companion - OpenClaw Plugin
 // Provides AKCB NFT analysis tools (9 tools)
-// Uses tier language (not raw scores) per sales bot conventions
+// RULE: Never expose numeric scores to the AI model — tier labels only.
+// The model will parrot any number it sees, so we strip them here.
 
 const API_URL = 'http://129.158.41.81:3100';
 
 function textResult(data: unknown) {
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+}
+
+// Strip numeric score fields — the model should only see tier labels
+const SCORE_FIELDS = new Set([
+  'grailScore', 'compositeScore', 'traitStackScore', 'vibeScore',
+  'reputationScore', 'premium', 'velocity', 'conviction', 'momentum',
+  'cult', 'scarcity', 'avgPrice', 'recentSales', 'currentScore',
+  'previousScore', 'change', 'averageComposite', 'averageVibe',
+]);
+
+function stripScores(obj: any): any {
+  if (Array.isArray(obj)) return obj.map(stripScores);
+  if (obj === null || typeof obj !== 'object') return obj;
+  const out: any = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (SCORE_FIELDS.has(k)) continue;
+    out[k] = stripScores(v);
+  }
+  return out;
 }
 
 export default function register(api: any) {
@@ -14,7 +34,7 @@ export default function register(api: any) {
   // Tool 1: Evaluate a specific beast
   api.registerTool({
     name: 'akcb_evaluate_beast',
-    description: 'Get a comprehensive evaluation of a specific AKCB beast by token ID. Returns build tier (top-tier, strong, solid, decent, floor), archetype, trait breakdown with grail tiers, and trait-by-trait analysis. Use this to assess any individual beast.',
+    description: 'Get a comprehensive evaluation of a specific AKCB beast by token ID. Returns build tier (top-tier build, strong build, solid build, decent build, floor build), archetype, and trait breakdown with tier classifications (grail-tier, premium, solid, common, floor). Always describe beasts using tier names, never numeric scores.',
     parameters: {
       type: 'object',
       properties: {
@@ -33,7 +53,7 @@ export default function register(api: any) {
         const score = await scoreRes.json();
         const traits = traitsRes.ok ? await traitsRes.json() : [];
         const grailScores = grailRes.ok ? await grailRes.json() : [];
-        return textResult({ ...score, traits, grailScores });
+        return textResult(stripScores({ ...score, traits, grailScores }));
       } catch (e) {
         return textResult({ error: 'Failed to fetch beast data' });
       }
@@ -43,11 +63,11 @@ export default function register(api: any) {
   // Tool 2: Search tokens by criteria
   api.registerTool({
     name: 'akcb_search_tokens',
-    description: 'Search AKCB tokens by build quality, archetype, or vibe. Filter by minimum composite score, archetype name, or vibe score. Returns beasts sorted by build quality descending with tier labels.',
+    description: 'Search AKCB beasts by build quality or archetype. Returns beasts sorted by quality with tier labels. Use tier names (top-tier build, strong build, etc.) when describing results — never show numeric scores.',
     parameters: {
       type: 'object',
       properties: {
-        minComposite: { type: 'number', description: 'Minimum composite score (0-100). 90+ = top-tier, 80+ = strong, 70+ = solid' },
+        minComposite: { type: 'number', description: 'Minimum quality threshold (0-100). 90+ = top-tier, 80+ = strong, 70+ = solid' },
         archetype: { type: 'string', description: 'Filter by archetype (Rare, Angel, Zombie, Bones, Astronaut, Ape Suit, Robot Suit)' },
         limit: { type: 'number', description: 'Max results to return (default 10)' },
       },
@@ -60,17 +80,17 @@ export default function register(api: any) {
         if (params.limit) query.set('limit', String(params.limit));
         const res = await fetch(`${API_URL}/v1/search/tokens?${query}`);
         if (!res.ok) return textResult({ error: 'Failed to search tokens' });
-        return textResult(await res.json());
+        return textResult(stripScores(await res.json()));
       } catch (e) {
         return textResult({ error: 'Failed to search tokens' });
       }
     },
   });
 
-  // Tool 3: Collection stats (renamed from akcb_market_brief)
+  // Tool 3: Collection stats
   api.registerTool({
     name: 'akcb_collection_stats',
-    description: 'Get AKCB collection overview: floor price (ETH + USD), daily/weekly volume and sales count, average sale price. Use this for general market questions.',
+    description: 'Get AKCB collection overview: floor price (ETH + USD), daily/weekly volume and sales count. Use this for general market questions.',
     parameters: {
       type: 'object',
       properties: {},
@@ -89,7 +109,7 @@ export default function register(api: any) {
   // Tool 4: Trending traits
   api.registerTool({
     name: 'akcb_trending_traits',
-    description: 'Get traits that are heating up — high velocity, rising demand. Shows which traits collectors are actively pursuing. Returns trait name, tier, and momentum direction.',
+    description: 'Get traits that are heating up — rising demand from collectors. Returns trait name, direction (heating/cooling), and tier. Use tier names when describing results.',
     parameters: {
       type: 'object',
       properties: {
@@ -101,7 +121,7 @@ export default function register(api: any) {
         const query = params.limit ? `?limit=${params.limit}` : '';
         const res = await fetch(`${API_URL}/v1/traits/heating${query}`);
         if (!res.ok) return textResult({ error: 'Failed to fetch trending traits' });
-        return textResult(await res.json());
+        return textResult(stripScores(await res.json()));
       } catch (e) {
         return textResult({ error: 'Failed to fetch trending traits' });
       }
@@ -111,7 +131,7 @@ export default function register(api: any) {
   // Tool 5: Search traits by name
   api.registerTool({
     name: 'akcb_search_traits',
-    description: 'Search AKCB traits by name. Returns tier classification, supply count, scarcity info, and demand metrics. Use for questions like "how rare is Robot?" or "what tier is Gold Chain?".',
+    description: 'Search AKCB traits by name. Returns tier (grail-tier, premium, solid, common, floor), supply count, and scarcity info. Use tier names and supply/scarcity framing — never numeric scores.',
     parameters: {
       type: 'object',
       properties: {
@@ -123,7 +143,7 @@ export default function register(api: any) {
       try {
         const res = await fetch(`${API_URL}/v1/search/traits?q=${encodeURIComponent(params.query)}`);
         if (!res.ok) return textResult({ error: 'Failed to search traits' });
-        return textResult(await res.json());
+        return textResult(stripScores(await res.json()));
       } catch (e) {
         return textResult({ error: 'Failed to search traits' });
       }
@@ -133,7 +153,7 @@ export default function register(api: any) {
   // Tool 6: Wallet portfolio analysis
   api.registerTool({
     name: 'akcb_portfolio_analyze',
-    description: 'Analyze an Ethereum wallet\'s AKCB collection. Returns beast count, build tier distribution, archetype breakdown, best beast, and per-token analysis with trait tiers. Use for "analyze my wallet" or "what do I hold?".',
+    description: 'Analyze an Ethereum wallet\'s AKCB collection. Returns beast count, build tier distribution, archetype breakdown, best beast, and per-token breakdown with trait tiers. Use tier names — never expose numeric scores to the user.',
     parameters: {
       type: 'object',
       properties: {
@@ -148,17 +168,17 @@ export default function register(api: any) {
           const err = await res.json().catch(() => ({ error: 'Unknown error' }));
           return textResult(err);
         }
-        return textResult(await res.json());
+        return textResult(stripScores(await res.json()));
       } catch (e) {
         return textResult({ error: 'Failed to fetch portfolio data' });
       }
     },
   });
 
-  // Tool 7: Quick floor check (NEW)
+  // Tool 7: Quick floor check
   api.registerTool({
     name: 'akcb_floor_check',
-    description: 'Quick floor price check — returns current floor in ETH and USD, plus daily volume. Use for "what\'s the floor?" or "how much is the cheapest beast?".',
+    description: 'Quick floor price check — returns current floor in ETH and USD, plus daily volume.',
     parameters: {
       type: 'object',
       properties: {},
@@ -174,10 +194,10 @@ export default function register(api: any) {
     },
   });
 
-  // Tool 8: Recent sales (NEW)
+  // Tool 8: Recent sales
   api.registerTool({
     name: 'akcb_recent_sales',
-    description: 'Get recent AKCB sales with prices in ETH and USD. Shows what beasts sold recently and at what price. Use for "what sold recently?" or "any recent sales?".',
+    description: 'Get recent AKCB sales with prices in ETH and USD. Shows what beasts sold recently and at what price.',
     parameters: {
       type: 'object',
       properties: {
@@ -196,10 +216,10 @@ export default function register(api: any) {
     },
   });
 
-  // Tool 9: Active listings (NEW)
+  // Tool 9: Active listings
   api.registerTool({
     name: 'akcb_listings',
-    description: 'Get active AKCB listings on OpenSea, enriched with build tier, archetype, and top trait. Filter by max price. Use for "what\'s listed?" or "any beasts under 0.1 ETH?".',
+    description: 'Get active AKCB listings on OpenSea, enriched with build tier, archetype, and top trait tier. Filter by max price. Use tier names when describing listings.',
     parameters: {
       type: 'object',
       properties: {
@@ -214,7 +234,7 @@ export default function register(api: any) {
         if (params.limit) query.set('limit', String(params.limit));
         const res = await fetch(`${API_URL}/v1/market/listings?${query}`);
         if (!res.ok) return textResult({ error: 'Failed to fetch listings' });
-        return textResult(await res.json());
+        return textResult(stripScores(await res.json()));
       } catch (e) {
         return textResult({ error: 'Failed to fetch listings' });
       }
