@@ -341,5 +341,49 @@ export default function register(api: any) {
     },
   });
 
-  console.log('[Beast Companion] Registered 13 tools');
+  // Tool 14: Holder milestones
+  api.registerTool({
+    name: 'akcb_holder_milestones',
+    description: 'Find AKCB holders who have crossed specific beast count thresholds. Milestones are: crossed_5, crossed_10, crossed_25, crossed_50. Returns holders sorted by total holdings. Use this to answer "who holds 10+ beasts?", "biggest collectors", "who crossed 25 beasts?".',
+    parameters: {
+      type: 'object',
+      properties: {
+        milestone: { type: 'string', description: 'Milestone to filter by: crossed_5, crossed_10, crossed_25, or crossed_50' },
+        limit: { type: 'number', description: 'Max results (default 20, max 200)' },
+      },
+    },
+    async execute(_id: string, params: { milestone?: string; limit?: number }) {
+      try {
+        const query = new URLSearchParams();
+        if (params.milestone) query.set('milestone', params.milestone);
+        if (params.limit) query.set('limit', String(params.limit));
+        const res = await fetch(`${API_URL}/v1/holders/milestones?${query}`);
+        if (!res.ok) return textResult({ error: 'Failed to fetch holder milestones' });
+        return textResult(await res.json());
+      } catch (e) {
+        return textResult({ error: 'Failed to fetch holder milestones' });
+      }
+    },
+  });
+
+  // Tool 15: Holder stats overview
+  api.registerTool({
+    name: 'akcb_holder_stats',
+    description: 'Get AKCB holder distribution overview: total unique holders, breakdown by tier (1, 2-4, 5-9, 10-24, 25-49, 50+ beasts), and count of holders with milestones. Lightweight summary with no personal info.',
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+    async execute(_id: string) {
+      try {
+        const res = await fetch(`${API_URL}/v1/market/holder-stats`);
+        if (!res.ok) return textResult({ error: 'Failed to fetch holder stats' });
+        return textResult(await res.json());
+      } catch (e) {
+        return textResult({ error: 'Failed to fetch holder stats' });
+      }
+    },
+  });
+
+  console.log('[Beast Companion] Registered 15 tools');
 }
