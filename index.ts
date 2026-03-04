@@ -341,23 +341,25 @@ export default function register(api: any) {
     },
   });
 
-  // Tool 14: Holder milestones
+  // Tool 14: Holder milestones (dynamic — computes crossing dates from sales history)
   api.registerTool({
     name: 'akcb_holder_milestones',
-    description: 'Find AKCB holders who have crossed specific beast count thresholds. Milestones are: crossed_5, crossed_10, crossed_25, crossed_50. Returns holders sorted by total holdings. Use this to answer "who holds 10+ beasts?", "biggest collectors", "who crossed 25 beasts?".',
+    description: 'Find AKCB holders who recently crossed a beast count threshold (e.g. 10, 25, 50). Dynamically computed from marketplace sales history — returns estimated date they crossed the threshold, how many they held before, and recent purchase count. Use this for "who crossed 10 beasts recently?", "new whales in the last 90 days?", "who just hit 25 held?". For a simple list of all holders above a threshold (no time filter), use akcb_holder_stats instead.',
     parameters: {
       type: 'object',
       properties: {
-        milestone: { type: 'string', description: 'Milestone to filter by: crossed_5, crossed_10, crossed_25, or crossed_50' },
+        threshold: { type: 'number', description: 'Beast count threshold to check (default 10). E.g. 10, 25, 50.' },
+        days: { type: 'number', description: 'Look back period in days (default 90, max 365)' },
         limit: { type: 'number', description: 'Max results (default 20, max 200)' },
       },
     },
-    async execute(_id: string, params: { milestone?: string; limit?: number }) {
+    async execute(_id: string, params: { threshold?: number; days?: number; limit?: number }) {
       try {
         const query = new URLSearchParams();
-        if (params.milestone) query.set('milestone', params.milestone);
-        if (params.limit) query.set('limit', String(params.limit));
-        const res = await fetch(`${API_URL}/v1/holders/milestones?${query}`);
+        if (params.threshold) query.set('threshold', String(params.threshold));
+        if (params.days) query.set('days', String(params.days));
+        query.set('limit', String(params.limit ?? 20));
+        const res = await fetch(`${API_URL}/v1/holders/milestones/recent?${query}`);
         if (!res.ok) return textResult({ error: 'Failed to fetch holder milestones' });
         return textResult(await res.json());
       } catch (e) {
