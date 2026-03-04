@@ -250,5 +250,96 @@ export default function register(api: any) {
     },
   });
 
-  console.log('[Beast Companion] Registered 9 tools');
+  // Tool 10: Holder profile lookup
+  api.registerTool({
+    name: 'akcb_holder_profile',
+    description: 'Look up an AKCB holder by wallet address or portal username. Returns profile info (X handle, Discord, founder status, Beast Points balance), current holdings count, and milestones achieved.',
+    parameters: {
+      type: 'object',
+      properties: {
+        identifier: { type: 'string', description: 'Wallet address (0x...) or portal username' },
+      },
+      required: ['identifier'],
+    },
+    async execute(_id: string, params: { identifier: string }) {
+      try {
+        const res = await fetch(`${API_URL}/v1/holders/${encodeURIComponent(params.identifier)}/profile`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: 'Not found' }));
+          return textResult(err);
+        }
+        return textResult(stripScores(await res.json()));
+      } catch (e) {
+        return textResult({ error: 'Failed to fetch holder profile' });
+      }
+    },
+  });
+
+  // Tool 11: Token sale history
+  api.registerTool({
+    name: 'akcb_sale_history',
+    description: 'Get the full sale history for a specific beast. Returns every recorded sale with date, price in ETH, buyer, and seller addresses. Use this to answer "has this beast been sold?", "what did it sell for?", "how many times has it traded?".',
+    parameters: {
+      type: 'object',
+      properties: {
+        tokenId: { type: 'number', description: 'The beast token ID (0-9999)' },
+      },
+      required: ['tokenId'],
+    },
+    async execute(_id: string, params: { tokenId: number }) {
+      try {
+        const res = await fetch(`${API_URL}/v1/tokens/${params.tokenId}/sales-history`);
+        if (!res.ok) return textResult({ error: `Failed to fetch sales for beast #${params.tokenId}` });
+        return textResult(await res.json());
+      } catch (e) {
+        return textResult({ error: 'Failed to fetch sale history' });
+      }
+    },
+  });
+
+  // Tool 12: Trait Wars results
+  api.registerTool({
+    name: 'akcb_trait_wars',
+    description: 'Get recent Trait Wars community poll results. Shows which traits won, vote counts, and margin of victory. Trait Wars are community polls pitting two traits against each other (M/W/F).',
+    parameters: {
+      type: 'object',
+      properties: {
+        limit: { type: 'number', description: 'Number of recent results to return (default 5, max 50)' },
+      },
+    },
+    async execute(_id: string, params: { limit?: number }) {
+      try {
+        const limit = params.limit ?? 5;
+        const res = await fetch(`${API_URL}/v1/trait-wars/history?limit=${limit}`);
+        if (!res.ok) return textResult({ error: 'Failed to fetch trait wars history' });
+        return textResult(await res.json());
+      } catch (e) {
+        return textResult({ error: 'Failed to fetch trait wars results' });
+      }
+    },
+  });
+
+  // Tool 13: Community pulse (amplifiers)
+  api.registerTool({
+    name: 'akcb_community_pulse',
+    description: 'See who is actively promoting AKCB on X/Twitter. Returns top community amplifiers ranked by engagement event count (tweets, retweets, quotes, likes). Use this to answer "who is tweeting about AKCB?", "most active community members", "who promotes the project?".',
+    parameters: {
+      type: 'object',
+      properties: {
+        limit: { type: 'number', description: 'Number of top amplifiers to return (default 10, max 100)' },
+      },
+    },
+    async execute(_id: string, params: { limit?: number }) {
+      try {
+        const limit = params.limit ?? 10;
+        const res = await fetch(`${API_URL}/v1/community/amplifiers?limit=${limit}`);
+        if (!res.ok) return textResult({ error: 'Failed to fetch community data' });
+        return textResult(await res.json());
+      } catch (e) {
+        return textResult({ error: 'Failed to fetch community pulse' });
+      }
+    },
+  });
+
+  console.log('[Beast Companion] Registered 13 tools');
 }
