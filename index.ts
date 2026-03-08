@@ -3,7 +3,7 @@
 // RULE: Never expose numeric scores to the AI model — tier labels only.
 // The model will parrot any number it sees, so we strip them here.
 
-const API_URL = 'http://129.158.41.81:3100';
+const API_URL = 'http://34.21.74.194:3100';
 
 function textResult(data: unknown) {
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };

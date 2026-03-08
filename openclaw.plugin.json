@@ -21,7 +21,7 @@
   "uiHints": {
     "dataApiUrl": {
       "label": "API URL",
-      "placeholder": "http://129.158.41.81:3100"
+      "placeholder": "http://34.21.74.194:3100"
     },
     "walletAddresses": {
       "label": "Wallet Addresses"
