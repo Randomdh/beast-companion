@@ -3,7 +3,14 @@
 // RULE: Never expose numeric scores to the AI model — tier labels only.
 // The model will parrot any number it sees, so we strip them here.
 
-const API_URL = 'http://34.21.74.194:3100';
+const API_URL = process.env.API_URL || 'https://api.akcbmap.com';
+const API_KEY = process.env.API_KEY || '';
+
+function apiHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (API_KEY) headers['X-API-Key'] = API_KEY;
+  return headers;
+}
 
 function textResult(data: unknown) {
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
@@ -54,9 +61,9 @@ export default function register(api: any) {
     async execute(_id: string, params: { tokenId: number }) {
       try {
         const [scoreRes, traitsRes, grailRes] = await Promise.all([
-          fetch(`${API_URL}/v1/tokens/${params.tokenId}/score`),
-          fetch(`${API_URL}/v1/tokens/${params.tokenId}/traits`),
-          fetch(`${API_URL}/v1/tokens/${params.tokenId}/grail-scores`),
+          fetch(`${API_URL}/v1/tokens/${params.tokenId}/score`, { headers: apiHeaders() }),
+          fetch(`${API_URL}/v1/tokens/${params.tokenId}/traits`, { headers: apiHeaders() }),
+          fetch(`${API_URL}/v1/tokens/${params.tokenId}/grail-scores`, { headers: apiHeaders() }),
         ]);
         if (!scoreRes.ok) return textResult({ error: `Beast #${params.tokenId} not found` });
         const score = await scoreRes.json();
@@ -87,7 +94,7 @@ export default function register(api: any) {
         if (params.minComposite) query.set('minComposite', String(params.minComposite));
         if (params.archetype) query.set('archetype', params.archetype);
         if (params.limit) query.set('limit', String(params.limit));
-        const res = await fetch(`${API_URL}/v1/search/tokens?${query}`);
+        const res = await fetch(`${API_URL}/v1/search/tokens?${query}`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to search tokens' });
         return textResult(stripScores(await res.json()));
       } catch (e) {
@@ -106,7 +113,7 @@ export default function register(api: any) {
     },
     async execute(_id: string) {
       try {
-        const res = await fetch(`${API_URL}/v1/market/floor`);
+        const res = await fetch(`${API_URL}/v1/market/floor`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to fetch collection stats' });
         return textResult(await res.json());
       } catch (e) {
@@ -128,7 +135,7 @@ export default function register(api: any) {
     async execute(_id: string, params: { limit?: number }) {
       try {
         const query = params.limit ? `?limit=${params.limit}` : '';
-        const res = await fetch(`${API_URL}/v1/traits/heating${query}`);
+        const res = await fetch(`${API_URL}/v1/traits/heating${query}`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to fetch trending traits' });
         return textResult(stripScores(await res.json()));
       } catch (e) {
@@ -150,7 +157,7 @@ export default function register(api: any) {
     },
     async execute(_id: string, params: { query: string }) {
       try {
-        const res = await fetch(`${API_URL}/v1/search/traits?q=${encodeURIComponent(params.query)}`);
+        const res = await fetch(`${API_URL}/v1/search/traits?q=${encodeURIComponent(params.query)}`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to search traits' });
         return textResult(stripScores(await res.json()));
       } catch (e) {
@@ -172,7 +179,7 @@ export default function register(api: any) {
     },
     async execute(_id: string, params: { address: string }) {
       try {
-        const res = await fetch(`${API_URL}/v1/wallet/${params.address}/portfolio`);
+        const res = await fetch(`${API_URL}/v1/wallet/${params.address}/portfolio`, { headers: apiHeaders() });
         if (!res.ok) {
           const err = await res.json().catch(() => ({ error: 'Unknown error' }));
           return textResult(err);
@@ -194,7 +201,7 @@ export default function register(api: any) {
     },
     async execute(_id: string) {
       try {
-        const res = await fetch(`${API_URL}/v1/market/floor`);
+        const res = await fetch(`${API_URL}/v1/market/floor`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to fetch floor price' });
         return textResult(await res.json());
       } catch (e) {
@@ -216,7 +223,7 @@ export default function register(api: any) {
     async execute(_id: string, params: { limit?: number }) {
       try {
         const query = params.limit ? `?limit=${params.limit}` : '';
-        const res = await fetch(`${API_URL}/v1/market/sales${query}`);
+        const res = await fetch(`${API_URL}/v1/market/sales${query}`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to fetch recent sales' });
         return textResult(await res.json());
       } catch (e) {
@@ -241,7 +248,7 @@ export default function register(api: any) {
         const query = new URLSearchParams();
         if (params.maxPrice) query.set('maxPrice', String(params.maxPrice));
         if (params.limit) query.set('limit', String(params.limit));
-        const res = await fetch(`${API_URL}/v1/market/listings?${query}`);
+        const res = await fetch(`${API_URL}/v1/market/listings?${query}`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to fetch listings' });
         return textResult(stripScores(await res.json()));
       } catch (e) {
@@ -263,7 +270,7 @@ export default function register(api: any) {
     },
     async execute(_id: string, params: { identifier: string }) {
       try {
-        const res = await fetch(`${API_URL}/v1/holders/${encodeURIComponent(params.identifier)}/profile`);
+        const res = await fetch(`${API_URL}/v1/holders/${encodeURIComponent(params.identifier)}/profile`, { headers: apiHeaders() });
         if (!res.ok) {
           const err = await res.json().catch(() => ({ error: 'Not found' }));
           return textResult(err);
@@ -288,7 +295,7 @@ export default function register(api: any) {
     },
     async execute(_id: string, params: { tokenId: number }) {
       try {
-        const res = await fetch(`${API_URL}/v1/tokens/${params.tokenId}/sales-history`);
+        const res = await fetch(`${API_URL}/v1/tokens/${params.tokenId}/sales-history`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: `Failed to fetch sales for beast #${params.tokenId}` });
         return textResult(await res.json());
       } catch (e) {
@@ -310,7 +317,7 @@ export default function register(api: any) {
     async execute(_id: string, params: { limit?: number }) {
       try {
         const limit = params.limit ?? 5;
-        const res = await fetch(`${API_URL}/v1/trait-wars/history?limit=${limit}`);
+        const res = await fetch(`${API_URL}/v1/trait-wars/history?limit=${limit}`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to fetch trait wars history' });
         return textResult(await res.json());
       } catch (e) {
@@ -332,7 +339,7 @@ export default function register(api: any) {
     async execute(_id: string, params: { limit?: number }) {
       try {
         const limit = params.limit ?? 10;
-        const res = await fetch(`${API_URL}/v1/community/amplifiers?limit=${limit}`);
+        const res = await fetch(`${API_URL}/v1/community/amplifiers?limit=${limit}`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to fetch community data' });
         return textResult(await res.json());
       } catch (e) {
@@ -359,7 +366,7 @@ export default function register(api: any) {
         if (params.threshold) query.set('threshold', String(params.threshold));
         if (params.days) query.set('days', String(params.days));
         query.set('limit', String(params.limit ?? 20));
-        const res = await fetch(`${API_URL}/v1/holders/milestones/recent?${query}`);
+        const res = await fetch(`${API_URL}/v1/holders/milestones/recent?${query}`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to fetch holder milestones' });
         return textResult(await res.json());
       } catch (e) {
@@ -378,7 +385,7 @@ export default function register(api: any) {
     },
     async execute(_id: string) {
       try {
-        const res = await fetch(`${API_URL}/v1/market/holder-stats`);
+        const res = await fetch(`${API_URL}/v1/market/holder-stats`, { headers: apiHeaders() });
         if (!res.ok) return textResult({ error: 'Failed to fetch holder stats' });
         return textResult(await res.json());
       } catch (e) {
